@@ -157,6 +157,20 @@
     h1 { font-size: clamp(1.9rem, 9vw, 2.4rem); }
     .h1-accent { font-size: clamp(1.9rem, 9vw, 2.4rem); }
   }
+  /* INSTRUCTIONS */
+  .instructions {
+    background: linear-gradient(135deg, rgba(13,148,136,0.08), rgba(244,114,182,0.08));
+    border: 1px solid rgba(56,189,248,0.3);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    margin: 0 0 2rem;
+    text-align: center;
+  }
+  .instructions p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
+  .instructions strong { color: var(--deep-plum); }
+  .instructions .steps { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; margin-top: 0.6rem; }
+  .instructions .step { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-muted); }
+  .instructions .step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--plum); color: white; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -174,6 +188,16 @@
     <span><span class="legend-dot dot-ref"></span> Reference — find something similar</span>
     <span><span class="legend-dot dot-link"></span> Direct link — exact item</span>
     <span><span class="legend-dot dot-claimed"></span> Already being gifted</span>
+  </div>
+
+  <div class="instructions">
+    <p><strong>How to claim a gift 🎀</strong></p>
+    <div class="steps">
+      <div class="step"><span class="step-num">1</span> Find something you want to gift</div>
+      <div class="step"><span class="step-num">2</span> Tap the 🎀 button on that card</div>
+      <div class="step"><span class="step-num">3</span> Type your name so I know it is not a misclick</div>
+      <div class="step"><span class="step-num">4</span> Hit Enter or tap the button again — done!</div>
+    </div>
   </div>
 
   <div class="grid" id="grid"></div>
@@ -323,17 +347,22 @@ let claiming = false;
 // ---- Claim / unclaim ----
 async function claim(idx) {
   if (claiming) return;
-  claiming = true;
-  const item = items[idx];
   const nameEl = document.getElementById('claimer-' + idx);
   const claimer = nameEl ? nameEl.value.trim() : '';
+  if (!claimer) {
+    if (nameEl) { nameEl.focus(); nameEl.style.borderColor = '#f472b6'; nameEl.placeholder = 'please enter your name first!'; }
+    showToast('Please enter your name first 💕');
+    return;
+  }
+  claiming = true;
+  const item = items[idx];
   const btn = document.querySelector('#card-' + idx + ' .tick-btn');
   if (btn) btn.disabled = true;
   try {
     if (isConfigured) await saveClaim(item.name, claimer);
     claims[item.name] = claimer;
     hardRenderAll();
-    showToast(claimer ? claimer + ' is on it! 🎀' : 'Claimed! 🎀');
+    showToast(claimer + ' is on it! 🎀');
   } catch(e) {
     showToast('Something went wrong, try again');
     if (btn) btn.disabled = false;
@@ -411,7 +440,7 @@ function buildCard(item, idx) {
   } else {
     claimHtml = `<div class="claim-area"><div class="claim-row">
       <button class="tick-btn" onclick="claim(${idx})" title="I'm getting this!">🎀</button>
-      <input class="claimer-input" type="text" id="claimer-${idx}" placeholder="your name (optional)" onkeydown="if(event.key==='Enter')claim(${idx})" />
+      <input class="claimer-input" type="text" id="claimer-${idx}" placeholder="your name (required ✦)" onkeydown="if(event.key==='Enter')claim(${idx})" />
     </div></div>`;
   }
 
